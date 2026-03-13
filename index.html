@@ -29,6 +29,7 @@
       color: #888;
       margin-bottom: 36px;
       font-size: 0.95rem;
+      text-align: center;
     }
 
     .card {
@@ -37,7 +38,8 @@
       border-radius: 12px;
       padding: 28px;
       width: 100%;
-      max-width: 680px;
+      max-width: 720px;
+      margin-bottom: 16px;
     }
 
     label {
@@ -47,23 +49,32 @@
       margin-bottom: 8px;
     }
 
-    input[type="text"] {
+    .instructions {
+      font-size: 0.82rem;
+      color: #666;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    textarea.input-area {
       width: 100%;
       padding: 12px 14px;
       background: #0f1117;
       border: 1px solid #2a2d3a;
       border-radius: 8px;
       color: #e0e0e0;
-      font-size: 0.95rem;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 0.85rem;
+      resize: vertical;
+      min-height: 180px;
       outline: none;
       transition: border-color 0.2s;
+      line-height: 1.5;
     }
 
-    input[type="text"]:focus {
-      border-color: #5865f2;
-    }
+    textarea.input-area:focus { border-color: #5865f2; }
 
-    button {
+    button.primary {
       margin-top: 14px;
       width: 100%;
       padding: 12px;
@@ -76,19 +87,16 @@
       cursor: pointer;
       transition: background 0.2s;
     }
-
-    button:hover:not(:disabled) { background: #4752c4; }
-    button:disabled { background: #3a3f6e; cursor: not-allowed; }
+    button.primary:hover:not(:disabled) { background: #4752c4; }
+    button.primary:disabled { background: #3a3f6e; cursor: not-allowed; }
 
     /* Status */
-    #status-section { margin-top: 24px; display: none; }
-
-    .status-label {
+    .status-label, .result-label, .url-map-title {
       font-size: 0.8rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: #888;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     .progress-text {
@@ -114,9 +122,6 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Result */
-    #result-section { margin-top: 24px; display: none; }
-
     .result-header {
       display: flex;
       justify-content: space-between;
@@ -124,25 +129,22 @@
       margin-bottom: 8px;
     }
 
-    .result-label {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #888;
-    }
-
-    .copy-btn {
+    button.copy-btn {
       margin-top: 0;
       width: auto;
       padding: 6px 14px;
       font-size: 0.82rem;
       font-weight: 500;
       background: #2a2d3a;
+      border: none;
       border-radius: 6px;
+      color: #e0e0e0;
+      cursor: pointer;
+      transition: background 0.2s;
     }
-    .copy-btn:hover:not(:disabled) { background: #363a4f; }
+    button.copy-btn:hover { background: #363a4f; }
 
-    textarea {
+    textarea.output-area {
       width: 100%;
       background: #0f1117;
       border: 1px solid #2a2d3a;
@@ -154,16 +156,10 @@
       resize: vertical;
       min-height: 200px;
       outline: none;
+      line-height: 1.5;
     }
 
     .url-map { margin-top: 20px; }
-    .url-map-title {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #888;
-      margin-bottom: 8px;
-    }
     .url-row {
       font-size: 0.82rem;
       color: #aaa;
@@ -177,66 +173,59 @@
     .url-row a { color: #7289da; text-decoration: none; word-break: break-all; }
     .url-row a:hover { text-decoration: underline; }
     .arrow { color: #555; flex-shrink: 0; }
-
-    .error-text {
-      color: #f47c7c;
-      font-size: 0.92rem;
-    }
-
-    .no-body-note {
-      color: #888;
-      font-size: 0.88rem;
-      font-style: italic;
-      padding: 10px 0;
-    }
+    .error-text { color: #f47c7c; }
   </style>
 </head>
 <body>
 
   <h1>Gfycat Wayback Retriever</h1>
-  <p class="subtitle">Paste a Reddit thread URL to recover archived Gfycat links via the Wayback Machine</p>
+  <p class="subtitle">
+    Paste the text of a Reddit post below.<br>
+    Gfycat links will be retrieved from the Wayback Machine and re-hosted on Catbox.
+  </p>
 
   <div class="card">
-    <label for="reddit-url">Reddit thread URL</label>
-    <input
-      type="text"
-      id="reddit-url"
-      placeholder="https://www.reddit.com/r/..."
-      autocomplete="off"
+    <label for="post-text">Reddit post text</label>
+    <p class="instructions">
+      Open the Reddit thread, click the three-dot menu on the post, and select
+      <strong>Copy text</strong> — then paste it here. You can also paste the
+      raw Markdown from the post editor.
+    </p>
+    <textarea
+      class="input-area"
+      id="post-text"
+      placeholder="Paste Reddit post text here…"
       spellcheck="false"
-    />
-    <button id="submit-btn" onclick="submitJob()">Retrieve Links</button>
+    ></textarea>
+    <button class="primary" id="submit-btn" onclick="submitJob()">Retrieve Links</button>
   </div>
 
-  <div class="card" id="status-section">
+  <div class="card" id="status-section" style="display:none">
     <div class="status-label">Status</div>
-    <div class="progress-text" id="progress-text">
+    <div class="progress-text">
       <span class="spinner" id="spinner"></span>
       <span id="progress-msg">Starting…</span>
     </div>
   </div>
 
-  <div class="card" id="result-section">
-    <div id="result-body-section">
-      <div class="result-header">
-        <span class="result-label">Updated post body</span>
-        <button class="copy-btn" onclick="copyBody()">Copy</button>
-      </div>
-      <textarea id="result-body" readonly></textarea>
+  <div class="card" id="result-section" style="display:none">
+    <div class="result-header">
+      <span class="result-label">Updated post text</span>
+      <button class="copy-btn" onclick="copyBody()">Copy</button>
     </div>
+    <textarea class="output-area" id="result-body" readonly></textarea>
 
     <div class="url-map" id="url-map-section">
-      <div class="url-map-title">URL Map</div>
+      <div class="url-map-title" style="margin-top:20px">URL map</div>
       <div id="url-map-rows"></div>
     </div>
   </div>
 
   <script>
     // -----------------------------------------------------------------------
-    // CONFIG — update this to your Render backend URL once deployed
+    // CONFIG — update this to your Render backend URL
     // -----------------------------------------------------------------------
     const API_BASE = "https://gfycat-backend.onrender.com";
-
     // -----------------------------------------------------------------------
 
     let pollInterval = null;
@@ -257,10 +246,9 @@
     }
 
     async function submitJob() {
-      const url = document.getElementById("reddit-url").value.trim();
-      if (!url) return;
+      const postText = document.getElementById("post-text").value.trim();
+      if (!postText) return;
 
-      // Reset UI
       document.getElementById("result-section").style.display = "none";
       document.getElementById("url-map-rows").innerHTML = "";
       document.getElementById("result-body").value = "";
@@ -270,10 +258,10 @@
 
       let jobId;
       try {
-        const res  = await fetch(`${API_BASE}/jobs`, {
+        const res = await fetch(`${API_BASE}/jobs`, {
           method:  "POST",
           headers: { "Content-Type": "application/json" },
-          body:    JSON.stringify({ reddit_url: url }),
+          body:    JSON.stringify({ post_text: postText }),
         });
         if (!res.ok) throw new Error(`Server returned ${res.status}`);
         const data = await res.json();
@@ -284,7 +272,6 @@
         return;
       }
 
-      // Poll every 4 seconds
       pollInterval = setInterval(() => pollJob(jobId), 4000);
     }
 
@@ -316,24 +303,12 @@
     }
 
     function renderResult(data) {
-      const section = document.getElementById("result-section");
-      section.style.display = "block";
+      document.getElementById("result-section").style.display = "block";
 
-      // Updated body
-      const bodySection = document.getElementById("result-body-section");
-      const bodyArea    = document.getElementById("result-body");
-      if (data.updated_body) {
-        bodyArea.value = data.updated_body;
-        bodySection.style.display = "block";
-      } else {
-        bodySection.style.display = "none";
-      }
+      document.getElementById("result-body").value = data.updated_body || "";
 
-      // URL map table
       const rows    = document.getElementById("url-map-rows");
-      const urlMap  = data.url_map || {};
-      const entries = Object.entries(urlMap);
-
+      const entries = Object.entries(data.url_map || {});
       if (entries.length === 0) {
         rows.innerHTML = "<div class='url-row' style='color:#888'>No URLs were successfully retrieved.</div>";
       } else {
